@@ -1,0 +1,188 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.2'
+}
+
+// 1 step create fatJar
+task customFatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'org.example.Main'
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+
+    doLast {
+        System.out.println("Jar is complited!");
+    }
+}
+
+// 2 step remove folder
+tasks.register("removeFolder") {
+    delete 'dist'
+
+    doLast {
+        System.out.println("Folder DIST successufuly deleted!");
+    }
+}
+
+
+// 3 step create folder
+tasks.register("creatFolder") {
+    doFirst {
+        System.out.println("Start to create folder DIST");
+    }
+
+    mkdir 'dist'
+
+    doLast {
+        System.out.println("Folder DIST successufuly created!");
+    }
+}
+
+// 4 step copy source file to directory
+task copySource(type: Copy) {
+    doFirst {
+        System.out.println("Copy source");
+    }
+
+    from 'source.txt'
+    into 'dist'
+
+    doLast {
+        System.out.println("Finished step 4");
+    }
+}
+
+// 5 step copy jar file to directory
+task copyJar(type: Copy) {
+    from 'build/libs/gradleFatJar-1.0-SNAPSHOT.jar'
+    into 'dist'
+    rename 'gradleFatJar-1.0-SNAPSHOT.jar', 'testProject.jar'
+}
+
+// 6 step run app
+task runWithExecJarExecutable(type: Exec) {
+    group = "Execution"
+    description = "Run the output executable jar with ExecTask"
+    commandLine "java", "-jar", "dist/testProject.jar"
+}
+
+
+
+
+
+
+removeFolder.dependsOn(customFatJar)
+creatFolder.dependsOn(removeFolder)
+copySource.dependsOn(creatFolder)
+copyJar.dependsOn(copySource)
+runWithExecJarExecutable.dependsOn(copyJar)
+
+test {
+    useJUnitPlatform()
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//task customFatJar(type: Jar) {
+//    manifest {
+//        attributes 'Main-Class': 'org.example.Main'
+//    }
+//    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+//    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+//    with jar
+//
+//    doLast {
+//        System.out.println("Finish with jar")
+//    }
+//}
+//
+//tasks.register('createFolder') {
+//    doFirst {
+//        System.out.println("Start create folder 2")
+//    }
+//
+//    mkdir "dist"
+//
+//    doLast {
+//        System.out.println("Finish create folder 2")
+//    }
+//}
+//
+//tasks.register('removeFolder') {
+//    doFirst {
+//        System.out.println("Start remove folder 1")
+//    }
+//
+//    delete "dist"
+//
+//    doLast {
+//        System.out.println("Finish remove folder 1")
+//    }
+//}
+//
+//
+//task copyDoc(type: Copy) {
+//    from 'source.txt'
+//    into 'dist'
+//}
+//
+//task copyJar(type: Copy) {
+//    from 'build/libs/testTasks-1.0-SNAPSHOT.jar'
+//    into 'dist'
+//    rename 'testTasks-1.0-SNAPSHOT.jar', 'testProject.jar'
+//}
+//
+//task runWithExecJarExecutable(type: Exec) {
+//    group = "Execution"
+//    description = "Run the output executable jar with ExecTask"
+//    commandLine "java", "-jar", "dist/testProject.jar"
+//}
+//
+//removeFolder.configure {
+//    dependsOn customFatJar
+//}
+//
+//tasks.createFolder.dependsOn(removeFolder)
+//tasks.copyJar.dependsOn(createFolder)
+//tasks.copyJar.finalizedBy(copyDoc)
+//tasks.runWithExecJarExecutable.dependsOn(copyJar)
