@@ -17,6 +17,7 @@ public class Main {
         System.out.println("");
         System.out.println("");
         System.out.println("Test1");
+        System.out.println("Test2");
         System.out.println("Hello and welcome!");
 
         GUser user = new GUser("Tim");
